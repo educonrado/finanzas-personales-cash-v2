@@ -44,6 +44,18 @@ La aplicación de finanzas personales permite a los usuarios registrar y categor
 
 **Desplegar el frontend**: `npm run build` y subir los archivos generados a GitHub Pages.
 
+## 🧱 Estructura del Proyecto
+1. assets: En este directorio, almacenaremos todos los archivos de activos. Aquí queremos guardar fuentes, iconos, imágenes, estilos, etc.
+2. common: Archivos comunes como componentes, directivas, archivos individuales, constantes,
+3. layouts: Diseños de la aplicación
+4. middlewares: Directorios para trabajar directamente con vue router. Almacena guards de navegación.
+5. modules: Núcleo de la aplicación para almacenar todos los módulos.
+6. plugins: Almacenamiento de plugins
+7. router: Archivos de Vue Router.
+8. services: Almacena los servicios, como conexiones a API, almacenamiento local, etc.
+9. static: Almacenamiento de datos mock.
+10. views: Almacena todos los puntos de entrada para las rutas de la aplicación. Ejemplo: home, about, etc. 
+
 ## 👥 Contribuciones
 
 ¡Contribuciones son bienvenidas! Por favor, sigue las pautas de contribución y asegúrate de discutir los cambios importantes a través de issues antes de enviar un pull request.
