@@ -21,12 +21,16 @@ export const getTransactions = (): Transaction[] => {
 };
 
 export const updateTransaction = (updateTransaction: Transaction) => {
-  const index = transactions.value.findIndex(t => t.id === updateTransaction.id);
-  if(index !== -1) {
+  const index = transactions.value.findIndex(
+    (t) => t.id === updateTransaction.id
+  );
+  if (index !== -1) {
     transactions.value[index] = updateTransaction;
   }
 };
 
 export const deleteTransaction = (id: number) => {
-  transactions.value = transactions.value.filter(t => t.id !== id);
-}
+  if (confirm("Desea eliminar el registro?")) {
+    transactions.value = transactions.value.filter((t) => t.id !== id);
+  }
+};
