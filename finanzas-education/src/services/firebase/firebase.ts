@@ -4,12 +4,12 @@ import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "your-api-key",
-  authDomain: "your-auth-domain",
-  projectId: "your-project-id",
-  storageBucket: "your-storage-bucket",
-  messagingSenderId: "your-messaging-sender-id",
-  appId: "your-app-id",
+  apiKey: "AIzaSyDoHsQSbGMoPjsV-5Cp_wm-9RvpmbejID8",
+  authDomain: "finanzas-education.firebaseapp.com",
+  projectId: "finanzas-education",
+  storageBucket: "finanzas-education.firebasestorage.app",
+  messagingSenderId: "824170706526",
+  appId: "1:824170706526:web:399ef4cd6dbba882fea6cf"
 };
 
 const app = initializeApp(firebaseConfig);

@@ -9,7 +9,7 @@
           <div class="sm:col-span-1">
             <label for="date" class="block text-sm/6 font-medium text-gray-900">*Fecha</label>
             <div class="mt-2">
-              <input type="date" name="date" id="date" v-model="transaction.date" required 
+              <input type="date" name="date" id="date" v-model="transaction.date" required
                 class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6">
             </div>
           </div>
@@ -129,7 +129,8 @@
   </form>
 </template>
 <script lang="ts" setup>
-import { Transaction, addTransaction, updateTransaction } from '@/modules/transactions/Transaction';
+import { Transaction } from '@/modules/transactions/Transaction';
+import { addTransactionFirebase, updateTransactionFirebase } from '@/services/transaction/TransactionService';
 import { ref, watch } from 'vue';
 
 interface Props {
@@ -147,17 +148,17 @@ watch(() => props.initialTransaction, (newVal) => {
 
 const handleSubmit = () => {
   if (props.isEditing) {
-    updateTransaction(transaction.value);
+    console.log(transaction.value.id);
+    
+    updateTransactionFirebase(transaction.value.id, transaction.value);
   } else {
-    addTransaction({
-      ...transaction.value,
-      id: Date.now()
-    });
+    addTransactionFirebase(transaction.value)
+    .then(res => console.log("codigo de respuesta: " + res))
+    .catch(error => console.log(error));
+    
   }
-  emit('submit');
-  transaction.value = { ...props.initialTransaction };
+emit('submit');
+transaction.value = { ...props.initialTransaction };
 };
 </script>
-<style lang="css">
-
-</style>
+<style lang="css"></style>

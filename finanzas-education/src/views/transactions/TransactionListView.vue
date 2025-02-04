@@ -62,7 +62,7 @@
                     <td class="p-4 py-2">
                         <p class="text-sm text-slate-500"> {{ formatCurrency(transaction.amount)}} </p>
                     </td>
-                    <td class="p-4 py-2 hidden lg:block">
+                    <td class="p-4 py-2 hidden lg:inline">
                         <p class="text-sm text-slate-500"> {{ transaction.description }}</p>
                     </td>
                     <td class="p-4 py-2">
@@ -124,13 +124,24 @@
 
 </template>
 <script lang="ts" setup>
-import { ref, watchEffect } from 'vue';
-import { Transaction, getTransactions, deleteTransaction } from '@/modules/transactions/Transaction';
+import { onMounted, ref, watchEffect } from 'vue';
+import { Transaction, getTransactions } from '@/modules/transactions/Transaction';
+import { deleteTransactionFirebase, getTransactionsByMonth } from '@/services/transaction/TransactionService';
 
 const transactions = ref<Transaction[]>([]);
 
 watchEffect(() => {
     transactions.value = getTransactions();
+});
+
+onMounted(async()=>{
+    try {
+        const year = new Date().getFullYear();
+        const month = new Date().getMonth();
+        transactions.value = await getTransactionsByMonth(month);
+    } catch (error) {
+        console.error("Error al obtener las transacciones." + error);
+    }
 });
 
 const emit = defineEmits(['edit']);
@@ -139,8 +150,8 @@ const handleEdit = (transaction: Transaction) => {
     emit('edit', transaction);
 };
 
-const handleDelete = (id: number) => {
-    deleteTransaction(id);
+const handleDelete = (id: string) => {
+    deleteTransactionFirebase(id);
 };
 
 const formatCurrency = (amount: number) => {

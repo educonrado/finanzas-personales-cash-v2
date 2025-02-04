@@ -1,7 +1,7 @@
 import { ref } from "vue";
 
 export interface Transaction {
-  id: number;
+  id: string;
   date: Date;
   type: "income" | "expense";
   category: string;
@@ -29,7 +29,7 @@ export const updateTransaction = (updateTransaction: Transaction) => {
   }
 };
 
-export const deleteTransaction = (id: number) => {
+export const deleteTransaction = (id: string) => {
   if (confirm("Desea eliminar el registro?")) {
     transactions.value = transactions.value.filter((t) => t.id !== id);
   }
