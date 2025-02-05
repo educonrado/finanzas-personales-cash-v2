@@ -147,13 +147,10 @@ watch(() => props.initialTransaction, (newVal) => {
 }, { deep: true });
 
 const handleSubmit = () => {
-  if (props.isEditing) {
-    console.log(transaction.value.id);
-    
-    updateTransactionFirebase(transaction.value.id, transaction.value);
+  if (props.isEditing && transaction.value.uid) {   
+    updateTransactionFirebase(transaction.value.uid, transaction.value);
   } else {
     addTransactionFirebase(transaction.value)
-    .then(res => console.log("codigo de respuesta: " + res))
     .catch(error => console.log(error));
     
   }

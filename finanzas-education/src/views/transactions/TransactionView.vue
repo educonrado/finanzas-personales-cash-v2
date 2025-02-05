@@ -28,7 +28,6 @@ const isEditing = ref<boolean>(false);
 const isFormVisible = ref<boolean>(false);
 
 const newTransaction = ref<Transaction>({
-    id: '',
     date: new Date(),
     type: 'income',
     category: '',
@@ -38,7 +37,6 @@ const newTransaction = ref<Transaction>({
 });
 
 const currentTransaction = ref<Transaction>({
-    id: '',
     date: new Date(),
     type: 'income',
     category: '',
@@ -56,7 +54,6 @@ const handleSubmit = async () => {
     isFormVisible.value = false;
     isEditing.value = false;
     currentTransaction.value = {
-        id: '',
         date: new Date(),
         type: 'income',
         category: '',

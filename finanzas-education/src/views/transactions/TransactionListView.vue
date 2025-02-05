@@ -45,7 +45,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="transaction in transactions" :key="transaction.id"
+                <tr v-for="transaction in transactions" :key="transaction.uid"
                     class="hover:bg-slate-50 border-b border-slate-200">
                     <td class="p-4 py-5">
                         <p class="text-sm text-slate-500"> {{formatDate(transaction.date) }}</p>
@@ -78,7 +78,7 @@
                             </svg>
 
                         </button>
-                        <button @click="handleDelete(transaction.id)" class="bg-white text-red-600 cursor-pointer"
+                        <button @click="handleDelete(transaction.uid)" class="bg-white text-red-600 cursor-pointer"
                             title="Eliminar">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                 stroke="currentColor" class="size-6 fill-regal-blue">
@@ -124,34 +124,22 @@
 
 </template>
 <script lang="ts" setup>
-import { onMounted, ref, watchEffect } from 'vue';
-import { Transaction, getTransactions } from '@/modules/transactions/Transaction';
-import { deleteTransactionFirebase, getTransactionsByMonth } from '@/services/transaction/TransactionService';
 
-const transactions = ref<Transaction[]>([]);
+import { Transaction } from '@/modules/transactions/Transaction';
+import { deleteTransactionFirebase } from '@/services/transaction/TransactionService';
+import { useTransactions } from '@/services/transaction/UseTransaction';
 
-watchEffect(() => {
-    transactions.value = getTransactions();
-});
-
-onMounted(async()=>{
-    try {
-        const year = new Date().getFullYear();
-        const month = new Date().getMonth();
-        transactions.value = await getTransactionsByMonth(month);
-    } catch (error) {
-        console.error("Error al obtener las transacciones." + error);
-    }
-});
-
+const {transactions} = useTransactions(1);
 const emit = defineEmits(['edit']);
 
 const handleEdit = (transaction: Transaction) => {
     emit('edit', transaction);
 };
 
-const handleDelete = (id: string) => {
-    deleteTransactionFirebase(id);
+const handleDelete = (uid?: string) => {
+    if(uid && confirm('Desea eliminar la transaccion?')) {
+        deleteTransactionFirebase(uid);
+    }
 };
 
 const formatCurrency = (amount: number) => {

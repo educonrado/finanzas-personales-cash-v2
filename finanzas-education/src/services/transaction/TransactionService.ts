@@ -4,9 +4,9 @@ import { db } from "../firebase/firebase";
 
 const documentoTransacciones = "transactions";
 
-export const addTransactionFirebase = async (transaction: Omit<Transaction, 'id'>): Promise<string> => {
+export const addTransactionFirebase = async (transaction: Omit<Transaction, 'uid'>): Promise<string> => {
     try {
-        const docRef = await addDoc(collection(db, "transactions"), transaction);
+        const docRef = await addDoc(collection(db, documentoTransacciones), transaction);
         return docRef.id;
     } catch (error) {
         console.error("Error al agregar la transacción: ", error);
@@ -48,9 +48,11 @@ export const deleteTransactionFirebase = async (transactionId: string): Promise<
 
 export const getTransactionsByMonth = async (month: number): Promise<Transaction[]> => {
     try {
-        const q = query(collection(db, documentoTransacciones), where("type", "==", "income"));
+        const q = query(collection(db, documentoTransacciones),
+            where("type", "==", "income")
+        );
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Transaction);
+        return querySnapshot.docs.map(doc => ({...doc.data() }) as Transaction);
     } catch (error) {
         console.error("Error al consultar transacciones: ", error);
         throw error;
