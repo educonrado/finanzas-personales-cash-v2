@@ -38,6 +38,8 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const handleGoogleLogin = async() => {
+  console.log(process.env.VUE_APP_PROJECTID);
+  
   try {
     await loginWithGoogle();
     router.push({name: 'dashboard'});
