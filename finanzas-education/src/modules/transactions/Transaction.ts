@@ -1,6 +1,8 @@
+import { Timestamp } from "firebase/firestore";
+
 export interface Transaction {
   uid?: string;
-  date: Date;
+  date: Timestamp;
   type: "income" | "expense";
   category: string;
   amount: number;

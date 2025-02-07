@@ -1,21 +1,8 @@
 <template>
-    <div class="transaction p-4 bg-gray-100 rounded-lg shadow-md">
-        <h1 class="text-3xl font-bold mb-4">Transacciones</h1>
-        <!--<button type="button" @click="showForm('add')" class="bg-blue-500 text-white px-4 py-2 rounded mb-4 hover:bg-blue-600 transition">
-        Agregar transacción
-    </button>
-    v-if="isFormVisible"
-    -->
-
-        <div class="mt-4">
-            <!--<h3 class="text-xl font-semibold mb-2">{{ isEditing ? 'Editar transacción' : 'Agregar transacción' }}</h3>-->
-            <TransactionFormView :isEditing="isEditing"
-                :initialTransaction="isEditing ? currentTransaction : newTransaction" @submit="handleSubmit">
-            </TransactionFormView>
-        </div>
-        <br />
-        <TransactionListView @edit="startEditing" />
-    </div>
+    <TransactionFormView :isEditing="isEditing" :initialTransaction="isEditing ? currentTransaction : newTransaction"
+        @submit="handleSubmit">
+    </TransactionFormView>
+    <TransactionListView @edit="handleEditTransaction" />
 </template>
 <script lang="ts" setup>
 import { ref } from 'vue';
@@ -23,12 +10,13 @@ import TransactionFormView from './TransactionFormView.vue';
 import TransactionListView from './TransactionListView.vue';
 import { Transaction } from '@/modules/transactions/Transaction';
 import { getTransactionsByMonth } from '@/services/transaction/TransactionService';
+import { Timestamp } from 'firebase/firestore';
 
 const isEditing = ref<boolean>(false);
 const isFormVisible = ref<boolean>(false);
 
 const newTransaction = ref<Transaction>({
-    date: new Date(),
+    date: Timestamp.now(),
     type: 'income',
     category: '',
     amount: 0,
@@ -37,7 +25,7 @@ const newTransaction = ref<Transaction>({
 });
 
 const currentTransaction = ref<Transaction>({
-    date: new Date(),
+    date: Timestamp.now(),
     type: 'income',
     category: '',
     amount: 0,
@@ -54,7 +42,7 @@ const handleSubmit = async () => {
     isFormVisible.value = false;
     isEditing.value = false;
     currentTransaction.value = {
-        date: new Date(),
+        date: Timestamp.now(),
         type: 'income',
         category: '',
         amount: 0,
@@ -64,7 +52,7 @@ const handleSubmit = async () => {
     fetchTransactions();
 };
 
-const startEditing = (transaction: Transaction) => {
+const handleEditTransaction = (transaction: Transaction) => {
     showForm('edit');
     currentTransaction.value = { ...transaction };
 };

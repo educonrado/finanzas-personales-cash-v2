@@ -1,128 +1,74 @@
 <template>
-  <form @submit.prevent="handleSubmit" class="space-y-4 bg-white p-6 rounded-lg shadow-md">
-    <div class="space-y-12">
-      <div class="border-b border-gray-900/10 pb-12">
-        <h2 class="text-base/7 font-semibold text-gray-900">Transacci&oacute;n</h2>
-        <p class="mt-1 text-sm/6 text-gray-600">Agregar o editar informaci&oacute;n de transacciones personales.</p>
+  <form @submit.prevent="handleSubmit" class="space-y-6 bg-gradient-to-r from-white to-gray-50 p-8 rounded-xl shadow-lg w-[95%] mx-auto border border-gray-100">
 
-        <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-          <div class="sm:col-span-1">
-            <label for="date" class="block text-sm/6 font-medium text-gray-900">*Fecha</label>
-            <div class="mt-2">
-              <input type="date" name="date" id="date" v-model="transaction.date" required
-                class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6">
-            </div>
-          </div>
-          <div class="sm:col-span-1">
-            <label for="type" class="block text-sm/6 font-medium text-gray-900">Tipo</label>
-            <div class="mt-2 grid grid-cols-1">
-              <div class="inline-flex items-center">
-                <label class="relative flex items-center cursor-pointer" for="income">
-                  <input name="type" type="radio" v-model="transaction.type" value="income"
-                    class="peer h-5 w-5 cursor-pointer rounded-full border border-slate-300 checked:border-slate-400 transition-all"
-                    id="income">
-                  <span
-                    class="absolute bg-slate-800 w-3 h-3 rounded-full opacity-0 peer-checked:opacity-100 transition-opacity duration-200 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                  </span>
-                </label>
-                <label class="ml-2 text-slate-600 cursor-pointer text-sm" for="income">Ingreso</label>
-              </div>
+    <div class="border-b border-gray-200 pb-4">
+      <h2 class="text-2xl font-bold text-gray-800 mb-2">Transacci&oacute;n</h2>
+      <p class="text-gray-600">Agregar o editar informaci&oacute;n de transacciones personales.</p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-6 gap-6">
+      <div class="flex flex-col">
+        <label for="date" class="text-sm font-semibold text-gray-700 mb-2">*Fecha</label>
+        <input name="type" type="date" v-model="fecha" id="date" required 
+          class="p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full transition-all duration-200">
+      </div>
 
-              <div class="inline-flex items-center">
-                <label class="relative flex items-center cursor-pointer" for="expense">
-                  <input name="type" type="radio" v-model="transaction.type" value="expense"
-                    class="peer h-5 w-5 cursor-pointer rounded-full border border-slate-300 checked:border-slate-400 transition-all"
-                    id="expense">
-                  <span
-                    class="absolute bg-slate-800 w-3 h-3 rounded-full opacity-0 peer-checked:opacity-100 transition-opacity duration-200 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                  </span>
-                </label>
-                <label class="ml-2 text-slate-600 cursor-pointer text-sm" for="expense">Gasto</label>
-              </div>
-            </div>
-            <!--<div class="mt-2 grid grid-cols-1">
-              <select id="type" name="type" v-model="transaction.type"
-                class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6">
-                <option value="income">Ingreso</option>
-                <option value="expense">Gasto</option>
-              </select>
-              <svg
-                class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
-                viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" data-slot="icon">
-                <path fill-rule="evenodd"
-                  d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z"
-                  clip-rule="evenodd" />
-              </svg>
-            </div>-->
-          </div>
-          <div class="sm:col-span-1">
-            <label for="category" class="block text-sm/6 font-medium text-gray-900">*Categoria</label>
-            <div class="mt-2 grid grid-cols-1">
-              <select id="category" name="category" v-model="transaction.category"
-                class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6">
-                <option value="vivienvia">Vivienda</option>
-                <option value="educacion">Educaci&oacute;n</option>
-              </select>
-              <svg
-                class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
-                viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" data-slot="icon">
-                <path fill-rule="evenodd"
-                  d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z"
-                  clip-rule="evenodd" />
-              </svg>
-            </div>
-          </div>
-          <div class="sm:col-span-1">
-            <label for="amount" class="block text-sm/6 font-medium text-gray-900">*Valor</label>
-            <div class="mt-2">
-              <div
-                class="flex items-center rounded-md bg-white pl-3 outline-1 -outline-offset-1 outline-gray-300 has-[input:focus-within]:outline-2 has-[input:focus-within]:-outline-offset-2 has-[input:focus-within]:outline-indigo-600">
-                <div class="shrink-0 text-base text-gray-500 select-none sm:text-sm/6">$</div>
-                <input type="number" step="0.01" min="0" max="999999999" name="amount" id="amount"
-                  v-model="transaction.amount"
-                  class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
-                  placeholder="0.00">
-                <!--<div class="grid shrink-0 grid-cols-1 focus-within:relative">
-                  <label id="currency" name="currency" aria-label="Currency"
-                    class="col-start-1 row-start-1 w-full appearance-none rounded-md py-1.5 pr-7 pl-3 text-base text-gray-500 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6">
-                    USD
-                  </label>
-                </div>-->
-              </div>
-            </div>
-          </div>
-          <div class="sm:col-span-1">
-            <label for="description" class="block text-sm/6 font-medium text-gray-900">Descripci&oacute;n</label>
-            <div class="mt-2">
-              <input type="text" name="description" id="description" v-model="transaction.description"
-                class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" />
-            </div>
-          </div>
-          <div class="sm:col-span-1">
-            <label for="account" class="block text-sm/6 font-medium text-gray-900">Cuenta</label>
-            <div class="mt-2 grid grid-cols-1">
-              <select id="account" name="account" v-model="transaction.account"
-                class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6">
-                <option value="efectivo">Efectivo</option>
-                <option value="cuenta1">Cuenta 1</option>
-              </select>
-              <svg
-                class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
-                viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" data-slot="icon">
-                <path fill-rule="evenodd"
-                  d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z"
-                  clip-rule="evenodd" />
-              </svg>
-            </div>
-          </div>
+      <div class="flex flex-col">
+        <label for="type" class="text-sm font-semibold text-gray-700 mb-2">Tipo</label>
+        <div class="flex flex-col space-y-2">
+          <label for="income" class="flex items-center space-x-2 cursor-pointer">
+        <input name="type" type="radio" v-model="transaction.type" value="income" id="income" 
+          class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+        <span class="text-gray-700">Ingreso</span>
+          </label>
+          <label for="expense" class="flex items-center space-x-2 cursor-pointer">
+        <input name="type" type="radio" v-model="transaction.type" value="expense" id="expense" 
+          class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+        <span class="text-gray-700">Gasto</span>
+          </label>
         </div>
+      </div>
+
+      <div class="flex flex-col">
+        <label for="category" class="text-sm font-semibold text-gray-700 mb-2">*Categoria</label>
+        <select id="category" name="category" v-model="transaction.category" required
+          class="p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full transition-all duration-200">
+          <option value="vivienvia">Vivienda</option>
+          <option value="educacion">Educaci&oacute;n</option>
+        </select>
+      </div>
+
+      <div class="flex flex-col">
+        <label for="description" class="text-sm font-semibold text-gray-700 mb-2">Descripci&oacute;n</label>
+        <input type="text" name="description" id="description" v-model="transaction.description"
+          placeholder="Descripci&oacute;n" 
+          class="p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full transition-all duration-200">
+      </div>
+
+      <div class="flex flex-col">
+        <label for="amount" class="text-sm font-semibold text-gray-700 mb-2">*Valor</label>
+        <input type="number" step="0.01" min="0.01" max="999999999" name="amount" id="amount" v-model="transaction.amount"
+          placeholder="0.00" required 
+          class="p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full transition-all duration-200">
+      </div>
+
+      <div class="flex flex-col">
+        <label for="account" class="text-sm font-semibold text-gray-700 mb-2">*Cuenta</label>
+        <select id="account" name="account" v-model="transaction.account" 
+          class="p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full transition-all duration-200">
+          <option value="vivienda" selected>Efectivo</option>
+          <option value="educacion">Cuenta 1</option>
+        </select>
       </div>
     </div>
 
-    <div class="mt-6 flex items-center justify-end gap-x-6">
-      <button type="reset" class="text-sm/6 font-semibold text-gray-900 cursor-pointer">Cancelar</button>
+    <div class="mt-8 flex items-center justify-end gap-x-4">
+      <button type="reset" @click="handleReset()"
+        class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors duration-200">
+        Cancelar
+      </button>
       <button type="submit"
-        class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 cursor-pointer">
+        class="px-6 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 transition-all duration-200">
         {{ isEditing ? 'Actualizar' : 'Guardar' }}
       </button>
     </div>
@@ -131,6 +77,7 @@
 <script lang="ts" setup>
 import { Transaction } from '@/modules/transactions/Transaction';
 import { addTransactionFirebase, updateTransactionFirebase } from '@/services/transaction/TransactionService';
+import { Timestamp } from 'firebase/firestore';
 import { ref, watch } from 'vue';
 
 interface Props {
@@ -141,21 +88,46 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(['submit']);
 const transaction = ref<Transaction>({ ...props.initialTransaction });
+const fecha = ref(transaction.value.date.toDate().toISOString().substring(0, 10));
 
 watch(() => props.initialTransaction, (newVal) => {
   transaction.value = { ...newVal };
+  fecha.value = newVal.date.toDate().toISOString().substring(0, 10);
 }, { deep: true });
 
 const handleSubmit = () => {
-  if (props.isEditing && transaction.value.uid) {   
+  transaction.value.date = Timestamp.fromDate(combinarFechaHora(fecha.value));
+  if (props.isEditing && transaction.value.uid) {
     updateTransactionFirebase(transaction.value.uid, transaction.value);
   } else {
     addTransactionFirebase(transaction.value)
-    .catch(error => console.log(error));
-    
+      .catch(error => console.log(error));
+
   }
-emit('submit');
-transaction.value = { ...props.initialTransaction };
+  emit('submit');
+  transaction.value = { ...props.initialTransaction };
 };
+
+const handleReset = () => {
+  transaction.value = { ...props.initialTransaction };
+  emit('submit');
+};
+
+function combinarFechaHora(value: string): Date {
+  const selectedDate = value;
+  const now = new Date();
+
+  const year = parseInt(selectedDate.substring(0, 4));
+  const month = parseInt(selectedDate.substring(5, 7)) - 1;
+  const day = parseInt(selectedDate.substring(8, 10));
+
+  const hours = now.getUTCHours();
+  const minutes = now.getUTCMinutes();
+  const seconds = now.getUTCSeconds();
+  const milliseconds = now.getUTCMilliseconds();
+
+  return new Date(Date.UTC(year, month, day, hours, minutes, seconds, milliseconds));
+
+}
 </script>
 <style lang="css"></style>

@@ -24,16 +24,23 @@
               <th class="p-4 border-b border-slate-200 bg-slate-50">
                 <p class="text-sm font-normal leading-none text-slate-500">Cuenta</p>
               </th>
+              <th class="p-4 border-b border-slate-200 bg-slate-50">
+                <p class="text-sm font-normal leading-none text-slate-500"></p>
+              </th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="transaction in transactions" :key="transaction.id">
-              <td class="p-4 border-b border-slate-200">{{ transaction.date }}</td>
+            <tr v-for="transaction in transactions" :key="transaction.uid">
+              <td class="p-4 border-b border-slate-200">{{ formatDate(transaction.date) }}</td>
               <td class="p-4 border-b border-slate-200">{{ transaction.type }}</td>
               <td class="p-4 border-b border-slate-200">{{ transaction.category }}</td>
-              <td class="p-4 border-b border-slate-200">{{ transaction.amount }}</td>
+              <td class="p-4 border-b border-slate-200">{{ formatCurrency(transaction.amount) }}</td>
               <td class="p-4 border-b border-slate-200 hidden lg:table-cell">{{ transaction.description }}</td>
               <td class="p-4 border-b border-slate-200">{{ transaction.account }}</td>
+              <td class="p-4 border-b border-slate-200">
+                <button @click="handleEdit(transaction)" class="text-blue-500 hover:text-blue-700">Editar</button>
+                <button @click="handleDelete(transaction.uid)" class="text-red-500 hover:text-red-700">Eliminar</button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -46,6 +53,7 @@
 import { Transaction } from '@/modules/transactions/Transaction';
 import { deleteTransactionFirebase } from '@/services/transaction/TransactionService';
 import { useTransactions } from '@/services/transaction/UseTransaction';
+import { Timestamp } from 'firebase/firestore';
 
 const {transactions} = useTransactions(1);
 const emit = defineEmits(['edit']);
@@ -64,8 +72,8 @@ const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD' }).format(amount);
 };
 
-const formatDate = (date: Date): string => {
-  const dateObj = new Date(date);
+const formatDate = (date: Timestamp): string => {
+  const dateObj = date.toDate();
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 

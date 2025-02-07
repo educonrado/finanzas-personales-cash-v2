@@ -1,5 +1,5 @@
 import { Transaction } from "@/modules/transactions/Transaction";
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, updateDoc, where } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
 import { auth, db } from "../firebase/firebase";
 
 const documentoTransacciones = "transactions";
@@ -8,6 +8,7 @@ const users = "users";
 export const addTransactionFirebase = async (transaction: Omit<Transaction, 'uid'>) => {
     const user = auth.currentUser;
     if (user) {
+        
         const transactionsCollectionRef = collection(db, users, user.uid, documentoTransacciones);
         await addDoc(transactionsCollectionRef, transaction);
     } else {
