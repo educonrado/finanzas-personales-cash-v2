@@ -1,60 +1,58 @@
 import { Transaction } from "@/modules/transactions/Transaction";
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, updateDoc, where } from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { auth, db } from "../firebase/firebase";
 
 const documentoTransacciones = "transactions";
+const users = "users";
 
-export const addTransactionFirebase = async (transaction: Omit<Transaction, 'uid'>): Promise<string> => {
-    try {
-        const docRef = await addDoc(collection(db, documentoTransacciones), transaction);
-        return docRef.id;
-    } catch (error) {
-        console.error("Error al agregar la transacción: ", error);
-        throw error;
+export const addTransactionFirebase = async (transaction: Omit<Transaction, 'uid'>) => {
+    const user = auth.currentUser;
+    if (user) {
+        const transactionsCollectionRef = collection(db, users, user.uid, documentoTransacciones);
+        await addDoc(transactionsCollectionRef, transaction);
+    } else {
+        throw new Error("No se ha iniciado sesión");
     }
 };
 
-export const getTransaction = async (id: string): Promise<Transaction | null> => {
-    try {
-        const transactionDoc = await getDoc(doc(db, documentoTransacciones, id));
-        if (transactionDoc.exists()) {
-            return { ...transactionDoc.data() } as Transaction;
-        } else {
-            return null;
-        }
-    } catch (error) {
-        console.error("No existe una transacción con el id solicitado: ", error);
-        throw error;
+export const getTransactionFirebase = async (): Promise<Transaction[]> => {
+    const user = auth.currentUser;
+    if (user) {
+        const transactionsCollectionRef = collection(db, users, user.uid, documentoTransacciones);
+        const querySnapshot = await getDocs(transactionsCollectionRef);
+        return querySnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }) as Transaction);
+    } else {
+        throw new Error("No se ha iniciado sesión");
     }
 };
 
 export const updateTransactionFirebase = async (transactionId: string, updates: Partial<Transaction>): Promise<void> => {
-    try {
-        await updateDoc(doc(db, documentoTransacciones, transactionId), updates);
-    } catch (error) {
-        console.error("Error al actualizar transacción: ", error);
-        throw error;
+    const user = auth.currentUser;
+    if (user) {
+        await updateDoc(doc(db, users, user.uid, documentoTransacciones, transactionId), updates);
+    } else {
+        throw new Error("No se ha iniciado sesión");
     }
 };
 
 export const deleteTransactionFirebase = async (transactionId: string): Promise<void> => {
-    try {
-        await deleteDoc(doc(db, documentoTransacciones, transactionId));
-    } catch (error) {
-        console.error("Error al eliminar la transacción: ", error);
-        throw error;
+    const user = auth.currentUser;
+    if (user) {
+        await deleteDoc(doc(db, users, user.uid, documentoTransacciones, transactionId));
+    } else {
+        throw new Error("No se ha iniciado sesión");
     }
 };
 
 export const getTransactionsByMonth = async (month: number): Promise<Transaction[]> => {
-    try {
-        const q = query(collection(db, documentoTransacciones),
+    const user = auth.currentUser;
+    if (user) {
+        const q = query(collection(db, users, user.uid, documentoTransacciones),
             where("type", "==", "income")
         );
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({...doc.data() }) as Transaction);
-    } catch (error) {
-        console.error("Error al consultar transacciones: ", error);
-        throw error;
+        return querySnapshot.docs.map(doc => ({ ...doc.data() }) as Transaction);
+    } else {
+        throw new Error("No se ha iniciado sesión");
     }
 };
