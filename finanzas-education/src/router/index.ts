@@ -17,9 +17,15 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/dashboard",
     name: "dashboard",
-    component: () => import("../views/dashboard/DashboardView.vue"),
-    meta: { requiresAuth: true },
+    component: () => import("../views/dashboard/DashboardContainer.vue"),
+    meta: { requiresAuth: false },
+    redirect: "/home",
     children: [
+      {
+        path: "/home",
+        name: "dashboardHome",
+        component: () => import("../views/dashboard/DashboardView.vue")
+      },
       {
         path: "transaccion",
         name: "transaccion",
