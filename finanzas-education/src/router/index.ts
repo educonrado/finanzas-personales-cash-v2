@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import HomeView from "../views/HomeView.vue";
-import { isAuthenticated } from "@/services/auth/AuthGoogle";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -15,14 +14,14 @@ const routes: Array<RouteRecordRaw> = [
   }
   ,
   {
-    path: "/dashboard",
-    name: "dashboard",
+    path: "/finanzas",
+    name: "finanzas",
     component: () => import("../views/dashboard/DashboardContainer.vue"),
-    meta: { requiresAuth: false },
-    redirect: "/home",
+    meta: { requiresAuth: true },
+    redirect: "/finanzas/home",
     children: [
       {
-        path: "/home",
+        path: "home",
         name: "dashboardHome",
         component: () => import("../views/dashboard/DashboardView.vue")
       },
@@ -33,6 +32,10 @@ const routes: Array<RouteRecordRaw> = [
       }
     ]
   },
+  {
+    path: "/:catchAll(.*)",
+    redirect: "/finanzas"
+  }
 
 ];
 
@@ -42,8 +45,9 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
+  const isLoggedIn = localStorage.getItem("user");
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!isAuthenticated()) {
+    if (!isLoggedIn) {
       next({ name: 'login' });
     } else {
       next();

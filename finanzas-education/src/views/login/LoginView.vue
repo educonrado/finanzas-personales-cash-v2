@@ -41,7 +41,7 @@ const handleGoogleLogin = async() => {
   console.log(process.env.VUE_APP_PROJECTID);
   try {
     await loginWithGoogle();
-    router.push({name: 'dashboard'});
+    router.push({name: 'finanzas'});
   } catch (error) {
     console.error('Error durante login de Google: ', error);
   }
