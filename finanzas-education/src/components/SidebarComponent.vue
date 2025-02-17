@@ -16,7 +16,7 @@
       </div>
 
       <nav class="mt-10">
-        <router-link class="flex items-center px-6 py-2 mt-4 duration-200 border-l-4"
+        <router-link class="flex items-center px-6 py-2 mt-4 duration-200 border-l-4" @click="isOpen = false"
           :class="[$route.name === 'Dashboard' ? activeClass : inactiveClass]" to="/finanzas/home">
           <svg class="w-5 h-5" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M2 10C2 5.58172 5.58172 2 10 2V10H18C18 14.4183 14.4183 18 10 18C5.58172 18 2 14.4183 2 10Z"
@@ -108,7 +108,7 @@
 
           <span class="mx-4">Blank</span>
         </router-link>-->
-        <router-link class="flex items-center px-6 py-2 mt-4 duration-200 border-l-4"
+        <router-link class="flex items-center px-6 py-2 mt-4 duration-200 border-l-4" @click="isOpen = false"
           :class="[$route.name === 'Transacciones' ? activeClass : inactiveClass]" to="/finanzas/transaccion">
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
             <path

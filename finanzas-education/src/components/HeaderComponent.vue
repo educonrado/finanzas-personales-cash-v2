@@ -49,9 +49,9 @@
                     leave-from-class="scale-100 opacity-100" leave-to-class="scale-95 opacity-0">
                     <div v-show="dropdownOpen"
                         class="absolute right-0 z-20 w-48 py-2 mt-2 bg-white rounded-md shadow-xl">
-                        <a href="#"
+                        <!--<a href="#"
                             class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-600 hover:text-white">Perfil</a>
-                        
+                        -->
                         <a @click="handleLogout()"
                             class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-600 hover:text-white">
                             Salir
