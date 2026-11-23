@@ -14,12 +14,15 @@ function parse(raw,st){
  let t=raw.trim();if(!t)return{error:'Escribe un monto y una descripción'};
  const type=t[0]==='+'?'income':t[0]==='>'?'transfer':'expense';if(type!=='expense')t=t.slice(1).trim();
  const A=act(st),find=k=>A.find(a=>a.id===slug(k)||slug(a.name)===slug(k));let to=null;
- if(type==='transfer'){const m=t.match(/^\S+/),d=m&&find(m[0]);if(!d)return{error:'Elige una cuenta destino. Ej: >efectivo 50'};to=d.id;t=t.slice(m[0].length).trim()}
- let acc=null;const am=t.match(/@([^\s#@>]+)/);
- if(am){const a=find(am[1]);if(!a)return{error:'La cuenta @'+am[1]+' no existe'};acc=a.id;t=t.replace(am[0],' ')}
+ if(type==='transfer'){const m=t.match(/^\S+/),d=m&&find(m[0]);if(!d)return{error:'Elige una cuenta destino. Ej: >efectivo 50',tokErr:1};to=d.id;t=t.slice(m[0].length).trim()}
+ let acc=null;const ams=[...t.matchAll(/@([^\s#@>]*)/g)];
+ if(ams.length>1)return{error:'Solo una cuenta por movimiento',tokErr:1};
+ if(ams.length){const am=ams[0];if(!am[1])return{error:'Elige una cuenta después de @',tokErr:1};const a=find(am[1]);if(!a)return{error:'La cuenta @'+am[1]+' no existe',tokErr:1};acc=a.id;t=t.replace(am[0],' ')}
  acc=acc||(st.filter!=='all'&&find(st.filter)?st.filter:null)||(find(st.lastAcc)?st.lastAcc:A[0].id);
- let cat=null,newCat=null;const cm=t.match(/#([^\s#@>]+)/);
- if(cm){t=t.replace(cm[0],' ');if(type!=='transfer'){const id=slug(cm[1]);if(st.categories.some(c=>c.type===type&&c.id===id))cat=id;else if(id){cat=id;newCat={id,name:id[0].toUpperCase()+id.slice(1),type}}}}
+ let cat=null,newCat=null;const cms=[...t.matchAll(/#([^\s#@>]*)/g)];
+ if(cms.length>1)return{error:'Solo una categoría por movimiento',tokErr:1};
+ if(cms.length){const cm=cms[0];if(!cm[1])return{error:'Elige una categoría después de #',tokErr:1};t=t.replace(cm[0],' ');
+  if(type!=='transfer'){const id=slug(cm[1]);if(!id)return{error:'La categoría necesita letras o números',tokErr:1};if(st.categories.some(c=>c.type===type&&c.id===id))cat=id;else{cat=id;newCat={id,name:id[0].toUpperCase()+id.slice(1),type}}}}
  const m=t.match(/(?:^|\s)\$?(\d+(?:[.,]\d{1,2})?|[.,]\d{1,2})(?=\s|$)/);
  if(!m)return{error:'No se detectó un monto. Ej: 500 comida'};
  const amount=toCents(m[1]);if(!amount)return{error:'El monto mínimo es $0,01'};if(amount>MAX)return{error:'El monto excede el límite'};
@@ -45,7 +48,7 @@ function summary(st,type,y,m,acc){const o={};let total=0;
 const net=(st,cat,y,m)=>st.txs.reduce((s,t)=>{const d=new Date(t.ts);return t.cat!==cat||t.type==='transfer'||d.getFullYear()!==y||d.getMonth()!==m?s:s+(t.type==='income'?t.amount:-t.amount)},0);
 function validate(d){
  if(!d||d.v!==3||!Array.isArray(d.accounts)||!Array.isArray(d.categories)||!Array.isArray(d.txs))return null;
- const ok=s=>typeof s==='string'&&/^[a-z0-9_-]{1,40}$/.test(s),dt=x=>x&&!isNaN(new Date(x));
+ const ok=s=>typeof s==='string'&&/^[a-z0-9_-]{1,40}$/.test(s)&&/[a-z0-9]/.test(s),dt=x=>x&&!isNaN(new Date(x));
  const accounts=d.accounts.filter(a=>a&&ok(a.id)).map(a=>({id:a.id,name:String(a.name||a.id).slice(0,24),initial:Number.isInteger(a.initial)?a.initial:0,include:a.include!==false,archived:!!a.archived,created:dt(a.created)?a.created:new Date().toISOString(),countedAt:dt(a.countedAt)?a.countedAt:null}));
  if(!accounts.length)return null;const ids=new Set(accounts.map(a=>a.id));
  const categories=d.categories.filter(c=>c&&ok(c.id)&&['expense','income'].includes(c.type)).map(c=>({id:c.id,name:String(c.name||c.id).slice(0,24),type:c.type}));

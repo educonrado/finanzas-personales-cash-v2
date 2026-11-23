@@ -31,3 +31,9 @@ a.equal(C.validate({v:2}),null);
 // centavos exactos
 const q=st();for(let i=0;i<1000;i++)tx(q,{type:'expense',amount:10,acc:'banco'});a.equal(C.balances(q).banco,-10000);
 console.log('TODAS LAS PRUEBAS OK');
+// atajos y tokens ambiguos
+{const s=st();
+ for(const t of ['5 x @','5 x #','5 x @banco @efectivo','5 x #a #b','5 x #---','>banco','+ @ 5']) a.ok(C.parse(t,s).error,'debe fallar: '+t);
+ a.ok(C.parse('5 x @banco',s).ok);a.ok(C.parse('5 x #comida',s).ok);a.equal(C.parse('>efectivo 5 #nada',s).cat,null);
+ a.equal(C.validate({v:3,accounts:[{id:'-',name:'x'},{id:'banco'}],categories:[{id:'---',type:'expense'},{id:'ok',type:'expense'}],txs:[]}).st.categories.length,1);
+ console.log('PRUEBAS DE TOKENS OK');}
