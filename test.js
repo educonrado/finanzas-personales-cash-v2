@@ -37,3 +37,5 @@ console.log('TODAS LAS PRUEBAS OK');
  a.ok(C.parse('5 x @banco',s).ok);a.ok(C.parse('5 x #comida',s).ok);a.equal(C.parse('>efectivo 5 #nada',s).cat,null);
  a.equal(C.validate({v:3,accounts:[{id:'-',name:'x'},{id:'banco'}],categories:[{id:'---',type:'expense'},{id:'ok',type:'expense'}],txs:[]}).st.categories.length,1);
  console.log('PRUEBAS DE TOKENS OK');}
+a.equal(C.plain(500000),'5000,00');a.equal(C.toCents(C.plain(123456)),123456);a.equal(C.signed(C.plain(-1250)),-1250);a.equal(C.plain(5),'0,05');
+console.log('PRUEBAS DE MONTO OK');

@@ -1,8 +1,6 @@
 <!DOCTYPE html><html lang="es"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Mi Dinero</title>
-<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#ffffff">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Mi Dinero">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,viewport-fit=cover"><title>Mi Dinero</title>
+<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#ffffff"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mi Dinero">
 <link rel="apple-touch-icon" href="icons/icon-192.png"><link rel="icon" type="image/svg+xml" href="icons/icon.svg">
 <style>
 :root{--bg:#fff;--ink:#0B1F3A;--mu:#5B6B7F;--ln:#E6EBF1;--sf:#F3F5F8;--br:#0A3A7A;--gr:#0B7A4B;--gb:#E6F4EC;--dg:#B42318}
@@ -37,7 +35,7 @@ form{display:flex;gap:8px}.inp,.fld{width:100%;height:48px;border-radius:24px;ba
 .opt{display:flex;justify-content:space-between;min-height:48px;align-items:center;padding:0 14px;border-radius:12px;width:100%}.opt.on{background:var(--br);color:#fff}
 .prev{display:flex;justify-content:space-between;gap:8px;padding:8px 14px;border-radius:12px;background:var(--sf);font-size:13px;margin-bottom:10px}
 .err{color:var(--dg);font-size:13px;margin:0 4px 8px}
-#sheet{position:fixed;inset:0;background:var(--bg);z-index:20;display:flex;justify-content:center}
+#sheet{position:absolute;inset:0;background:var(--bg);z-index:20;display:flex;justify-content:center}
 .box{margin:12px 0;padding:14px 16px;border-radius:16px;background:var(--sf)}
 .seg{display:flex;background:var(--sf);border-radius:14px;padding:4px;height:48px}.seg button{flex:1;border-radius:10px;text-align:center;color:var(--mu);font-weight:500}.seg .on{background:var(--bg);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(11,31,58,.2)}
 .bar6{height:6px;border-radius:3px;background:var(--sf);margin-top:10px}.bar6 i{display:block;height:6px;border-radius:3px;background:var(--br)}
@@ -49,6 +47,8 @@ html{width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%}.ph,.sh,header,m
 body.kb footer{padding-bottom:10px}body.kb .stat,body.kb .chips{display:none}
 html,body{overscroll-behavior:none}main,.bd{overscroll-behavior:contain}
 .trw{display:flex;align-items:flex-end;gap:6px}.trw select{min-width:0;width:100%;padding:0 8px}
+.fld[type=datetime-local]{display:block;width:100%;min-width:0;max-width:100%;text-align:left}
+.fld::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
 </style></head><body>
 <div class="ph"><header id="top"></header><main id="list"></main>
 <footer><div id="pop" class="pop hide" role="listbox"></div>
@@ -58,6 +58,7 @@ html,body{overscroll-behavior:none}main,.bd{overscroll-behavior:contain}
 <div id="sheet" class="hide"></div><div id="toast" class="hide" role="status"></div>
 <script src="core.js"></script>
 <script>
+const VERSION='3.5 · 23 nov 2026';
 const C=Core,KEY='midinero_v3',E=C.esc,$=i=>document.getElementById(i);
 const IC={in:'<path d="M17 7 7 17M7 8v9h9"/>',out:'<path d="M7 17 17 7M8 7h9v9"/>',sw:'<path d="M7 7h12l-3-3M17 17H5l3 3"/>',ch:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',ge:'<path d="M3 6h11M18 6h3M3 12h5M12 12h9M3 18h13M20 18h1"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',bk:'<path d="M15 18l-6-6 6-6"/>',pl:'<path d="M12 5v14M5 12h14"/>',se:'<path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/>'};
 const svg=(k,s=20)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k]}</svg>`;
@@ -164,7 +165,7 @@ const accOpts=(sel)=>C.act(st).map(a=>opt(E(a.name),a.id,a.id===sel)).join('');
 function openEdit(id){const t=st.txs.find(x=>x.id===id),tr=t.type==='transfer',d=new Date(t.ts),p=n=>String(n).padStart(2,'0');
  const ds=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
  sheet('Editar movimiento',`<label class="m">Descripción</label><input id="eD" class="fld" maxlength="80" value="${E(t.desc)}">
- <label class="m">Monto</label><input id="eA" class="fld n" inputmode="decimal" value="${C.fmt(t.amount).replace('$','')}">
+ <label class="m">Monto</label><input id="eA" class="fld n" inputmode="decimal" value="${C.plain(t.amount)}">
  ${tr?'':`<label class="m">Tipo</label><select id="eT" class="fld" onchange="eCats()">${opt('Gasto','expense',t.type==='expense')}${opt('Ingreso','income',t.type==='income')}</select>`}
  <label class="m">${tr?'Origen':'Cuenta'}</label><select id="eC" class="fld">${accOpts(t.acc)}</select>
  ${tr?`<label class="m">Destino</label><select id="eTo" class="fld">${accOpts(t.to)}</select>`:`<label class="m">Categoría</label><select id="eK" class="fld"></select>`}
@@ -193,7 +194,7 @@ function cnOk(id){const v=C.signed($('cn').value);if(v==null)return;const d=C.co
   st.txs.push({id:'t'+Date.now().toString(36),ts:now(),type:ty,amount:Math.abs(d),desc:'Ajuste al cuadrar',acc:id,to:null,cat:cid})}
  acc(id).countedAt=now();save();closeSheet();toast(d?'Ajuste registrado':'Todo cuadra')}
 function openAcc(id){const a=id?acc(id):null,bal=a?C.balances(st)[id]:0;
- sheet(a?'Cuenta':'Nueva cuenta',`<label class="m">Nombre</label><input id="aN" class="fld" maxlength="24" value="${a?E(a.name):''}"><label class="m">Saldo inicial</label><input id="aI" class="fld n" inputmode="decimal" value="${a?C.fmt(a.initial).replace('$',''):'0,00'}">
+ sheet(a?'Cuenta':'Nueva cuenta',`<label class="m">Nombre</label><input id="aN" class="fld" maxlength="24" value="${a?E(a.name):''}"><label class="m">Saldo inicial</label><input id="aI" class="fld n" inputmode="decimal" value="${a?C.plain(a.initial):'0,00'}">
  <label class="row" style="min-height:56px"><span class="g">Sumar en “Total en tus cuentas”<div class="s">Apágalo para ahorros o pólizas que no puedes usar</div></span><input id="aS" type="checkbox" ${!a||a.include?'checked':''} style="width:24px;height:24px"></label><div id="aE" class="err hide"></div>
  <button class="btn" onclick="saveAcc('${id||''}')">Guardar</button>${a?`<button class="btn2" ${bal!==0||C.act(st).length<2?'disabled style="opacity:.4"':''} onclick="tt(this,()=>archive('${id}'))">Archivar cuenta</button><p class="m" style="font-size:12px">${bal!==0?'Solo se puede archivar con saldo en cero.':''}</p><button class="btn2" onclick="closeSheet();openCount('${id}')">Cuadrar esta cuenta</button>`:''}`)}
 function saveAcc(id){const n=$('aN').value.trim(),i=C.signed($('aI').value),e=$('aE');
@@ -215,7 +216,7 @@ function openSettings(){const B=C.balances(st),chips=ty=>`<div class="tg">${st.c
  <div class="lbl"><span>Datos</span></div><button class="row" style="min-height:52px" onclick="exportData()"><span class="g">Descargar copia (JSON)</span><span class="m">↓</span></button>
  <label class="row" style="min-height:52px;cursor:pointer"><span class="g">Restaurar copia</span><span class="m">↑</span><input type="file" accept=".json" class="hide" onchange="importData(event)"></label>
  <button class="btn2 dg" onclick="tt(this,()=>{st.txs=[];save();closeSheet();toast('Movimientos borrados')})">Borrar todos los movimientos</button>
- <button class="btn2 dg" onclick="tt(this,resetAll)">Empezar desde cero</button><p class="m" style="font-size:12px;text-align:center;margin-bottom:30px">Empezar desde cero borra cuentas, categorías y movimientos.</p>`)}
+ <button class="btn2 dg" onclick="tt(this,resetAll)">Empezar desde cero</button><p class="m" style="font-size:12px;text-align:center">Empezar desde cero borra cuentas, categorías y movimientos.</p><p class="m n" style="font-size:12px;text-align:center;margin:16px 0 30px">Versión ${VERSION}</p>`)}
 function exportData(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(st,null,2)],{type:'application/json'}));a.download='midinero-'+now().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);toast('Copia descargada')}
 function importData(ev){const f=ev.target.files[0];if(!f)return;if(!confirm('Esto reemplazará tus datos actuales. ¿Continuar?')){ev.target.value='';return}
  const r=new FileReader();r.onload=()=>{try{const v=C.validate(JSON.parse(r.result));if(!v)throw 0;st=v.st;save();closeSheet();toast('Copia restaurada'+(v.skipped?` (${v.skipped} inválidos omitidos)`:''))}catch(e){toast('El archivo no es válido')}ev.target.value=''};r.readAsText(f)}
@@ -226,11 +227,14 @@ function openSummary(){const n=new Date(),m=new Date(n.getFullYear(),n.getMonth(
  <div class="bar" style="margin-top:8px"><button class="ib" aria-label="Mes anterior" onclick="S.off--;openSummary()">${svg('bk')}</button><b>${(x=>x[0].toUpperCase()+x.slice(1))(m.toLocaleDateString('es-EC',{month:'long'}))} ${y}</b><button class="ib" aria-label="Mes siguiente" ${S.off>=0?'disabled style="opacity:.3"':''} onclick="S.off++;openSummary()"><span style="transform:scaleX(-1);display:flex">${svg('bk')}</span></button></div>
  <div class="m" style="font-size:13px">Total ${ex?'gastado':'recibido'} · ${st.filter==='all'?'todas las cuentas':E(acc(st.filter).name)}</div><div class="big n">${C.fmt(r.total)}</div>
  ${r.rows.length?r.rows.map(x=>`<button class="row" style="display:block" onclick="S.sel=S.sel==='${x.cat}'?null:'${x.cat}';openSummary()"><div class="bar" style="min-height:0"><span>${x.cat?E(catName(S.type,x.cat)):'Sin categoría'}</span><b class="n">${C.fmt(x.v)}</b></div><div class="bar6"><i style="width:${Math.round(x.v/r.rows[0].v*100)}%"></i></div>${S.sel===x.cat&&x.cat?`<div class="s">Neto del mes en esta categoría (ingresos − gastos): <b class="n">${C.fmt(C.net(st,x.cat,y,mo))}</b></div>`:''}</button>`).join(''):`<p class="m" style="text-align:center;padding:30px 0">Sin ${ex?'gastos':'ingresos'} este mes</p>`}`)}
-const vv=window.visualViewport;
-function fit(){if(vv){document.body.style.height=vv.height+'px';document.body.style.top=vv.offsetTop+'px'}scrollTo(0,0)}
-if(vv)vv.addEventListener('resize',fit);addEventListener('orientationchange',fit);fit();
-addEventListener('focusin',e=>{if(/INPUT|SELECT/.test(e.target.tagName))document.body.classList.add('kb')});
-addEventListener('focusout',()=>setTimeout(()=>{if(!/INPUT|SELECT/.test((document.activeElement||{}).tagName))document.body.classList.remove('kb')},60));
+const vv=window.visualViewport;let kbOpen=false;
+function fit(){const b=document.body.style;kbOpen=!!vv&&vv.height<innerHeight-100;
+ if(kbOpen){b.height=Math.round(vv.height)+'px';b.top=Math.max(0,Math.round(vv.offsetTop))+'px'}
+ else{b.height='';b.top='';if(!/INPUT|SELECT/.test((document.activeElement||{}).tagName))scrollTo(0,0)}}
+if(vv){vv.addEventListener('resize',fit);vv.addEventListener('scroll',()=>{if(kbOpen)fit()})}addEventListener('orientationchange',fit);
+const later=()=>[0,120,350,700].forEach(t=>setTimeout(fit,t));
+addEventListener('focusin',e=>{if(/INPUT|SELECT/.test(e.target.tagName)){document.body.classList.add('kb');later()}});
+addEventListener('focusout',()=>setTimeout(()=>{if(!/INPUT|SELECT/.test((document.activeElement||{}).tagName)){document.body.classList.remove('kb');later()}},60));
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 render();typing();
 </script></body></html>

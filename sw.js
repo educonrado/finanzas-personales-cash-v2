@@ -1,4 +1,4 @@
-const CACHE_NAME = 'midinero-pwa-v4';
+const CACHE_NAME = 'midinero-pwa-v5';
 const ASSETS_TO_CACHE = [
   './', './index.html', './core.js', './manifest.json',
   './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png'

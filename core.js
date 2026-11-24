@@ -4,6 +4,7 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const toCents=s=>{s=String(s).trim().replace(/^\$/,'');const m=s.match(/^(\d+)(?:[.,](\d{1,2}))?$|^[.,](\d{1,2})$/);if(!m)return null;return +(m[1]||0)*100+ +((m[2]||m[3]||'').padEnd(2,'0')||0)};
 const signed=s=>{s=String(s).trim();const n=s[0]==='-';const v=toCents(n?s.slice(1):s);return v==null?null:n?-v:v};
 const fmt=c=>{const a=Math.abs(c);return(c<0?'−':'')+'$'+String(Math.floor(a/100)).replace(/\B(?=(\d{3})+(?!\d))/g,'.')+','+String(a%100).padStart(2,'0')};
+const plain=c=>{const a=Math.abs(c);return(c<0?'-':'')+Math.floor(a/100)+','+String(a%100).padStart(2,'0')};
 const slug=s=>String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9_-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,30);
 const uid=(list,name)=>{const b=slug(name)||'x';let id=b,i=2;while(list.some(x=>x.id===id))id=b+'-'+i++;return id};
 const act=st=>st.accounts.filter(a=>!a.archived);
@@ -54,6 +55,6 @@ function validate(d){
  const categories=d.categories.filter(c=>c&&ok(c.id)&&['expense','income'].includes(c.type)).map(c=>({id:c.id,name:String(c.name||c.id).slice(0,24),type:c.type}));
  const txs=d.txs.filter(t=>t&&ok(t.id)&&['income','expense','transfer'].includes(t.type)&&Number.isInteger(t.amount)&&t.amount>=1&&t.amount<=MAX&&dt(t.ts)&&ids.has(t.acc)&&(t.type!=='transfer'||(ids.has(t.to)&&t.to!==t.acc))).map(t=>({id:t.id,ts:new Date(t.ts).toISOString(),type:t.type,amount:t.amount,desc:String(t.desc||'Sin descripción').slice(0,80),acc:t.acc,to:t.type==='transfer'?t.to:null,cat:ok(t.cat)?t.cat:null}));
  return{st:{v:3,accounts,categories,txs,lastAcc:ids.has(d.lastAcc)?d.lastAcc:accounts[0].id,filter:'all'},skipped:d.txs.length-txs.length}}
-g.Core={esc,toCents,signed,fmt,slug,uid,act,delta,balances,total,parse,timeline,countDiff,summary,net,validate,MAX};
+g.Core={esc,toCents,signed,plain,fmt,slug,uid,act,delta,balances,total,parse,timeline,countDiff,summary,net,validate,MAX};
 if(typeof module!=='undefined')module.exports=g.Core;
 })(typeof window!=='undefined'?window:globalThis);
