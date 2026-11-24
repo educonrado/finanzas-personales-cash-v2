@@ -1,6 +1,8 @@
 <!DOCTYPE html><html lang="es"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,viewport-fit=cover"><title>Mi Dinero</title>
-<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#ffffff"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mi Dinero">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Mi Dinero</title>
+<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#ffffff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mi Dinero">
 <link rel="apple-touch-icon" href="icons/icon-192.png"><link rel="icon" type="image/svg+xml" href="icons/icon.svg">
 <style>
 :root{--bg:#fff;--ink:#0B1F3A;--mu:#5B6B7F;--ln:#E6EBF1;--sf:#F3F5F8;--br:#0A3A7A;--gr:#0B7A4B;--gb:#E6F4EC;--dg:#B42318}
@@ -45,9 +47,12 @@ html{width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%}.ph,.sh,header,m
 .inp{flex:1;min-width:0;width:auto}.inp,.fld{font-size:16px}.bar>div{display:flex}
 .tok.on{background:var(--br);color:#fff}.tok.on b{color:#fff}
 body.kb footer{padding-bottom:10px}body.kb .stat,body.kb .chips{display:none}
+html,body{overscroll-behavior:none}main,.bd{overscroll-behavior:contain}
+.trw{display:flex;align-items:flex-end;gap:6px}.trw select{min-width:0;width:100%;padding:0 8px}
 </style></head><body>
 <div class="ph"><header id="top"></header><main id="list"></main>
-<footer><div id="pop" class="pop hide" role="listbox"></div><div id="err" class="err hide"></div><div id="prev" class="prev hide"></div>
+<footer><div id="pop" class="pop hide" role="listbox"></div>
+<div id="tr" class="pop hide" style="padding:12px"><div class="trw"><label class="g m" style="font-size:12px">De<select id="trF" class="fld" style="margin:4px 0 0" onchange="trApply()"></select></label><button type="button" class="ib" style="margin-bottom:6px" aria-label="Intercambiar origen y destino" onclick="trSwap()">⇄</button><label class="g m" style="font-size:12px">Hacia<select id="trT" class="fld" style="margin:4px 0 0" onchange="trApply()"></select></label></div><div style="display:flex;justify-content:space-between"><button type="button" class="lnk" style="color:var(--dg)" onclick="trCancel()">Quitar transferencia</button><button type="button" class="lnk" onclick="trClose()">Listo</button></div></div><div id="err" class="err hide"></div><div id="prev" class="prev hide"></div>
 <div class="toks"><button class="tok" id="tk-in" onclick="ins('+')"><b>+</b>ingreso</button><button class="tok" id="tk-tr" onclick="ins('>')"><b>&gt;</b>transferir</button><button class="tok" id="tk-ct" onclick="ins('#')"><b>#</b>categoría</button><button class="tok" id="tk-ac" onclick="ins('@')"><b>@</b>cuenta</button></div>
 <form onsubmit="send(event)"><input id="inp" class="inp" placeholder="350 cena #comida" autocomplete="off" autocapitalize="off" autocorrect="off" enterkeyhint="send" spellcheck="false" aria-label="Registrar movimiento" oninput="typing()" onkeydown="keys(event)"><button class="send" aria-label="Registrar" id="sendb"></button></form></footer></div>
 <div id="sheet" class="hide"></div><div id="toast" class="hide" role="status"></div>
@@ -67,20 +72,20 @@ const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){toast(
 let tt_;function toast(m){const t=$('toast');t.textContent=m;t.classList.remove('hide');clearTimeout(tt_);tt_=setTimeout(()=>t.classList.add('hide'),2400)}
 function tt(b,fn,l){if(b.dataset.a){fn();return}b.dataset.a=1;const o=b.textContent;b.textContent=l||'¿Seguro? Toca de nuevo';setTimeout(()=>{delete b.dataset.a;b.textContent=o},3000)}
 const days=a=>Math.floor((Date.now()-new Date(a.countedAt||a.created))/864e5);
-const cnt=a=>{if(!a.countedAt)return'sin contar aún';const d=days(a);return d?`sin contar hace ${d} ${d==1?'día':'días'}`:'contada hoy'};
+const uc=a=>{if(!a.countedAt)return'nunca';const d=days(a);return d?`hace ${d} ${d==1?'día':'días'}`:'hoy'};
 const catName=(t,id)=>(st.categories.find(c=>c.type===t&&c.id===id)||{}).name||'Sin categoría';
 const tm=s=>new Date(s).toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit'});
 function dayLbl(s){const d=new Date(s),t=new Date(),y=new Date();y.setDate(t.getDate()-1);return d.toDateString()===t.toDateString()?'Hoy':d.toDateString()===y.toDateString()?'Ayer':d.toLocaleDateString('es-EC',{weekday:'short',day:'numeric',month:'short'})}
 function render(){
  const A=C.act(st),B=C.balances(st),f=A.find(a=>a.id===st.filter)?st.filter:(st.filter='all'),all=f==='all',n=new Date();let inc=0,exp=0;
  st.txs.forEach(t=>{const d=new Date(t.ts);if(d.getMonth()!==n.getMonth()||d.getFullYear()!==n.getFullYear()||(!all&&t.acc!==f))return;if(t.type==='income')inc+=t.amount;if(t.type==='expense')exp+=t.amount});
- const ex=A.filter(a=>!a.include),pool=all?A.filter(a=>a.include):[acc(f)],old=pool.sort((a,b)=>days(b)-days(a))[0];
+ const ex=A.filter(a=>!a.include),old=all?A.filter(a=>a.countedAt&&days(a)>=7).sort((a,b)=>days(b)-days(a))[0]:acc(f);
  $('top').innerHTML=`<div class="bar"><b style="font-size:16px">Mi Dinero</b><div><button class="ib" aria-label="Resumen del mes" onclick="openSummary()">${svg('ch')}</button><button class="ib" aria-label="Ajustes" onclick="openSettings()">${svg('ge')}</button></div></div>
  <div class="m" style="font-size:13px;margin-top:6px">${all?'Total en tus cuentas':E(acc(f).name)}</div><div class="big n">${C.fmt(all?C.total(st):B[f])}</div>
  <div class="m n" style="font-size:13px;margin-top:2px">Este mes <b style="color:var(--gr);font-weight:600">+${C.fmt(inc)}</b> · <b style="color:var(--ink);font-weight:600">−${C.fmt(exp)}</b></div>
  ${all&&ex.length?`<div class="m" style="font-size:12px;margin-top:2px">No incluye: ${ex.map(a=>E(a.name)).join(', ')}</div>`:''}
  <div class="chips"><button class="chip ${all?'on':''}" onclick="setF('all')">Todas <span class="m n">${C.fmt(C.total(st))}</span></button>${A.map(a=>`<button class="chip ${f===a.id?'on':''} ${a.include?'':'off'}" onclick="setF('${a.id}')">${E(a.name)} <span class="m n">${C.fmt(B[a.id])}</span></button>`).join('')}<button class="chip" aria-label="Nueva cuenta" onclick="openAcc()">${svg('pl',18)}</button></div>
- ${old?`<div class="stat"><span class="m">${E(old.name)} · ${cnt(old)}</span><button class="lnk" onclick="openCount('${old.id}')">Contar</button></div>`:''}`;
+ ${old?`<div class="stat"><span class="m">${all?E(old.name)+' · ú':'Ú'}ltimo cuadre: ${uc(old)}</span><button class="lnk" onclick="openCount('${old.id}')">Cuadrar</button></div>`:''}`;
  {const c=$('top').querySelector('.chips'),o=c&&c.querySelector('.on');if(o)c.scrollLeft=o.offsetLeft-(c.clientWidth-o.clientWidth)/2}
  const tl=C.timeline(st,f);
  if(!tl.length){$('list').innerHTML=`<div style="text-align:center;padding:40px 10px" class="m"><b style="color:var(--ink);font-size:16px">Escribe abajo como en un chat</b><p>Cada movimiento tarda segundos en registrarse.</p>${['350 cena #comida','+1200 sueldo #sueldo','>efectivo 50'].map(x=>`<button class="tok" style="margin:4px auto" onclick="fill('${x}')">${x}</button>`).join('')}</div>`;return}
@@ -97,11 +102,28 @@ let opts=[],sel=0,tok=null;const inp=$('inp');
 const fill=x=>{inp.value=x;inp.focus();typing()};
 const showErr=m=>{const x=$('err');x.textContent=m;x.classList.remove('hide')};
 const dropDest=v=>v.slice(1).replace(/^\s*\S+\s*/,'');
-function ins(s){let v=inp.value;
+function ins(s){let v=inp.value;if(s!=='>')$('tr').classList.add('hide');
+ if(s==='>'){if($('tr').classList.contains('hide'))openTr();else trClose();return}
  if(s==='+'){if(v[0]==='>')v=dropDest(v);inp.value=v[0]==='+'?v.slice(1).trimStart():'+'+v;inp.focus();typing();return}
- if(s==='>'&&v[0]==='>'){inp.value=dropDest(v);inp.focus();typing();return}
- if(s==='#'&&v[0]==='>'){showErr('Las transferencias no llevan categoría');return}
+ if(v[0]==='>'&&s==='#'){showErr('Las transferencias no llevan categoría');return}
+ if(!$('pop').classList.contains('hide')&&tok&&tok.k===s){closeAssist();return}
+ if(s==='#'){v=v.replace(/\s*#[^\s#@>]*/g,'').trim();inp.value=(v?v+' ':'')+'#';inp.focus();typing();return}
  inp.focus();typing(s)}
+const trOpts=x=>C.act(st).map(a=>`<option value="${a.id}" ${a.id===x?'selected':''}>${E(a.name)}</option>`).join('');
+function openTr(){const A=C.act(st);if(A.length<2){showErr('Necesitas al menos dos cuentas para transferir');return}
+ opts=[];drawPop();const v=inp.value,id=x=>A.some(a=>a.id===x);
+ let f=C.slug((v.match(/@([^\s#@>]+)/)||[])[1]||'');if(!id(f))f=st.filter!=='all'&&id(st.filter)?st.filter:(id(st.lastAcc)?st.lastAcc:A[0].id);
+ let t=C.slug(v[0]==='>'?((v.slice(1).match(/^\s*(\S+)/)||[])[1]||''):'');if(!id(t)||t===f)t=A.find(a=>a.id!==f).id;
+ $('trF').innerHTML=trOpts(f);$('trT').innerHTML=trOpts(t);$('tr').classList.remove('hide');trApply()}
+function trApply(){const f=$('trF').value,t=$('trT').value;if(f===t){showErr('Origen y destino deben ser distintos');return}
+ $('err').classList.add('hide');let r=inp.value;if(r[0]==='>')r=dropDest(r);else if(r[0]==='+')r=r.slice(1).trimStart();
+ r=r.replace(/\s*@[^\s#@>]*/g,'').replace(/\s*#[^\s#@>]*/g,'').trim();inp.value='>'+t+' @'+f+' '+r;typing()}
+function trSwap(){const f=$('trF').value;$('trF').value=$('trT').value;$('trT').value=f;trApply()}
+function trClose(){$('tr').classList.add('hide');inp.focus()}
+function trCancel(){let v=inp.value;if(v[0]==='>')v=dropDest(v);inp.value=v.replace(/\s*@[^\s#@>]*/g,'').trim();$('tr').classList.add('hide');inp.focus();typing()}
+let quiet=false;
+function closeAssist(){$('tr').classList.add('hide');const v=inp.value,n=v.replace(/(^|\s)[#@]$/,'').replace(/^>$/,'').trimEnd();if(n!==v.trimEnd())inp.value=n;quiet=true;typing()}
+document.addEventListener('pointerdown',e=>{if(e.target.closest('#pop,#tr,#inp,.toks'))return;if(!$('pop').classList.contains('hide')||!$('tr').classList.contains('hide'))closeAssist()});
 function build(k,q,v){
  if(k==='#'){const ty=v[0]==='+'?'income':'expense',r=st.categories.filter(c=>c.type===ty&&(c.id.includes(q)||c.name.toLowerCase().includes(q))).map(c=>({v:'#'+c.id,l:E(c.name),id:c.id})),s=C.slug(q);
   if(q&&s&&!r.some(o=>o.id===s))r.push({v:'#'+s,l:'+ Crear #'+E(s),id:null});return r}
@@ -110,7 +132,7 @@ function typing(fk){$('err').classList.add('hide');const v=inp.value,b=v.slice(0
  if(fk){tok={k:fk,q:'',start:null,len:0};opts=build(fk,'',v)}
  else{let m=b.match(/^>([^\s]*)$/),k='>';if(m)m=[m[0],'>',m[1]];else{m=b.match(/(?:^|\s)([#@])([^\s#@>]*)$/);k=m&&m[1]}
   if(m){const q=m[2].toLowerCase();tok={k,q,start:b.length-m[0].length+(/^\s/.test(m[0])?1:0),len:m[0].trim().length};opts=build(k,q,v)}}
- sel=0;drawPop();
+ if(quiet){opts=[];tok=null;quiet=false}sel=0;drawPop();
  const on=(i,x)=>$(i).classList.toggle('on',!!x);on('tk-in',v[0]==='+');on('tk-tr',v[0]==='>');on('tk-ac',/@[^\s#@>]+/.test(v));on('tk-ct',/#[^\s#@>]+/.test(v));
  const p=C.parse(v,st),pv=$('prev');
  if(p.ok){const a=acc(p.acc),b2=acc(p.to);pv.innerHTML=`<span><b>${E(p.desc)}</b> <span class="m">${p.type==='transfer'?E(a.name)+' → '+E(b2.name):[p.cat&&E(catName(p.type,p.cat)),E(a.name)].filter(Boolean).join(' · ')}</span></span><b class="n" style="color:${p.type==='income'?'var(--gr)':'var(--ink)'}">${p.type==='income'?'+':p.type==='expense'?'−':''}${C.fmt(p.amount)}</b>`;pv.classList.remove('hide')}
@@ -157,20 +179,23 @@ function saveEdit(id){const t=st.txs.find(x=>x.id===id),tr=t.type==='transfer',a
  save();closeSheet();toast('Movimiento actualizado')}
 function delTx(id){st.txs=st.txs.filter(t=>t.id!==id);save();closeSheet();toast('Movimiento eliminado')}
 function openCount(id){const a=acc(id),ex=C.balances(st)[id];
- sheet('Contar '+E(a.name),`<div class="m" style="margin-top:24px">La app calcula que tienes</div><div class="big n">${C.fmt(ex)}</div><div style="font-weight:600;margin-top:28px">¿Cuánto tienes realmente?</div>
- <input id="cn" class="fld n" style="height:64px;font-size:28px;font-weight:600" inputmode="decimal" placeholder="0,00" oninput="cnCalc('${id}')"><div id="cnR" class="box hide"></div>
- <button class="btn" id="cnB" disabled onclick="cnOk('${id}')">Confirmar y ajustar</button><p class="m" style="font-size:12px;text-align:center">Diferencias de $10 o más conviene revisarlas.</p>`);$('cn').focus()}
+ sheet('Cuadrar '+E(a.name),`<p class="m" style="margin:16px 0 0">Compara lo que dice la app con lo que realmente tienes.</p><div class="m" style="margin-top:20px">La app calcula que tienes</div><div class="big n">${C.fmt(ex)}</div>
+ <div id="cnQ"><div style="font-weight:600;margin:24px 0 12px">¿Coincide con lo que tienes?</div><button class="btn" onclick="cnMatch('${id}')">Sí, coincide</button><button class="btn2" onclick="cnOther()">No, tengo otro monto</button></div>
+ <div id="cnForm" class="hide"><div style="font-weight:600;margin-top:24px">¿Cuánto tienes realmente?</div><input id="cn" class="fld n" style="height:64px;font-size:28px;font-weight:600" inputmode="decimal" placeholder="0,00" oninput="cnCalc('${id}')"><div id="cnR" class="box hide"></div>
+ <button class="btn" id="cnB" disabled onclick="cnOk('${id}')">Confirmar y ajustar</button><p class="m" style="font-size:12px;text-align:center">Diferencias de $10 o más conviene revisarlas.</p></div>`)}
+function cnMatch(id){acc(id).countedAt=now();save();closeSheet();toast('Saldo verificado')}
+function cnOther(){$('cnQ').classList.add('hide');$('cnForm').classList.remove('hide');$('cn').focus()}
 function cnCalc(id){const v=C.signed($('cn').value),r=$('cnR'),b=$('cnB');if(v==null){r.classList.add('hide');b.disabled=true;return}
  const d=C.countDiff(st,id,v),big=Math.abs(d)>=1000;b.disabled=false;r.classList.remove('hide');
- r.innerHTML=d===0?'<b>Todo cuadra</b>':`<b class="n" style="font-size:20px">${d<0?'Faltan':'Sobran'} ${C.fmt(Math.abs(d))}</b><div class="m" style="font-size:13px;margin-top:4px">Se registrará como ${d<0?'gasto en Varios':'ingreso en Otros'} con la nota “Ajuste al contar”.</div>${big?'<div style="color:var(--dg);font-size:13px;margin-top:6px">Diferencia grande: revisa si olvidaste registrar algo.</div>':''}`}
+ r.innerHTML=d===0?'<b>Todo cuadra</b>':`<b class="n" style="font-size:20px">${d<0?'Faltan':'Sobran'} ${C.fmt(Math.abs(d))}</b><div class="m" style="font-size:13px;margin-top:4px">Se registrará como ${d<0?'gasto en Varios':'ingreso en Otros'} con la nota “Ajuste al cuadrar”.</div>${big?'<div style="color:var(--dg);font-size:13px;margin-top:6px">Diferencia grande: revisa si olvidaste registrar algo.</div>':''}`}
 function cnOk(id){const v=C.signed($('cn').value);if(v==null)return;const d=C.countDiff(st,id,v);
  if(d){const ty=d<0?'expense':'income',cid=d<0?'varios':'otros';if(!st.categories.some(c=>c.type===ty&&c.id===cid))st.categories.push({id:cid,name:d<0?'Varios':'Otros',type:ty});
-  st.txs.push({id:'t'+Date.now().toString(36),ts:now(),type:ty,amount:Math.abs(d),desc:'Ajuste al contar',acc:id,to:null,cat:cid})}
+  st.txs.push({id:'t'+Date.now().toString(36),ts:now(),type:ty,amount:Math.abs(d),desc:'Ajuste al cuadrar',acc:id,to:null,cat:cid})}
  acc(id).countedAt=now();save();closeSheet();toast(d?'Ajuste registrado':'Todo cuadra')}
 function openAcc(id){const a=id?acc(id):null,bal=a?C.balances(st)[id]:0;
  sheet(a?'Cuenta':'Nueva cuenta',`<label class="m">Nombre</label><input id="aN" class="fld" maxlength="24" value="${a?E(a.name):''}"><label class="m">Saldo inicial</label><input id="aI" class="fld n" inputmode="decimal" value="${a?C.fmt(a.initial).replace('$',''):'0,00'}">
  <label class="row" style="min-height:56px"><span class="g">Sumar en “Total en tus cuentas”<div class="s">Apágalo para ahorros o pólizas que no puedes usar</div></span><input id="aS" type="checkbox" ${!a||a.include?'checked':''} style="width:24px;height:24px"></label><div id="aE" class="err hide"></div>
- <button class="btn" onclick="saveAcc('${id||''}')">Guardar</button>${a?`<button class="btn2" ${bal!==0||C.act(st).length<2?'disabled style="opacity:.4"':''} onclick="tt(this,()=>archive('${id}'))">Archivar cuenta</button><p class="m" style="font-size:12px">${bal!==0?'Solo se puede archivar con saldo en cero.':''}</p><button class="btn2" onclick="closeSheet();openCount('${id}')">Contar esta cuenta</button>`:''}`)}
+ <button class="btn" onclick="saveAcc('${id||''}')">Guardar</button>${a?`<button class="btn2" ${bal!==0||C.act(st).length<2?'disabled style="opacity:.4"':''} onclick="tt(this,()=>archive('${id}'))">Archivar cuenta</button><p class="m" style="font-size:12px">${bal!==0?'Solo se puede archivar con saldo en cero.':''}</p><button class="btn2" onclick="closeSheet();openCount('${id}')">Cuadrar esta cuenta</button>`:''}`)}
 function saveAcc(id){const n=$('aN').value.trim(),i=C.signed($('aI').value),e=$('aE');
  const bad=!n||!C.slug(n)?'Ponle un nombre con letras o números':i==null||Math.abs(i)>C.MAX?'Saldo inicial no válido':C.act(st).some(a=>a.id!==id&&a.name.toLowerCase()===n.toLowerCase())?'Ya existe una cuenta con ese nombre':'';
  if(bad){e.textContent=bad;e.classList.remove('hide');return}
@@ -185,7 +210,7 @@ function saveCat(ty,id){const n=$('cN').value.trim(),e=$('cE'),s=C.slug(n);
  if(id)st.categories.find(c=>c.type===ty&&c.id===id).name=n;else st.categories.push({id:s,name:n,type:ty});save();openSettings()}
 function delCat(ty,id){st.categories=st.categories.filter(c=>!(c.type===ty&&c.id===id));st.txs.forEach(t=>{if(t.type===ty&&t.cat===id)t.cat=null});save();openSettings();toast('Categoría eliminada')}
 function openSettings(){const B=C.balances(st),chips=ty=>`<div class="tg">${st.categories.filter(c=>c.type===ty).map(c=>`<button class="tok" onclick="openCat('${ty}','${c.id}')">${E(c.name)}</button>`).join('')}<button class="tok" style="color:var(--br);font-weight:600" onclick="openCat('${ty}')">+ Nueva</button></div>`;
- sheet('Ajustes',`<div class="lbl"><span>Cuentas</span></div>${C.act(st).map(a=>`<button class="row" onclick="openAcc('${a.id}')"><span class="g"><div class="d">${E(a.name)}</div><div class="s">${a.include?'Suma en el total':'No suma en el total'} · ${cnt(a)}</div></span><b class="n">${C.fmt(B[a.id])}</b></button>`).join('')}
+ sheet('Ajustes',`<div class="lbl"><span>Cuentas</span></div>${C.act(st).map(a=>`<button class="row" onclick="openAcc('${a.id}')"><span class="g"><div class="d">${E(a.name)}</div><div class="s">${a.include?'Suma en el total':'No suma en el total'} · Último cuadre: ${uc(a)}</div></span><b class="n">${C.fmt(B[a.id])}</b></button>`).join('')}
  <button class="lnk" onclick="openAcc()">+ Nueva cuenta</button><div class="lbl"><span>Categorías de gasto</span></div>${chips('expense')}<div class="lbl"><span>Categorías de ingreso</span></div>${chips('income')}
  <div class="lbl"><span>Datos</span></div><button class="row" style="min-height:52px" onclick="exportData()"><span class="g">Descargar copia (JSON)</span><span class="m">↓</span></button>
  <label class="row" style="min-height:52px;cursor:pointer"><span class="g">Restaurar copia</span><span class="m">↑</span><input type="file" accept=".json" class="hide" onchange="importData(event)"></label>
@@ -198,12 +223,12 @@ function resetAll(){try{Object.keys(localStorage).filter(k=>k.startsWith('midine
 let S={type:'expense',off:0,sel:null};
 function openSummary(){const n=new Date(),m=new Date(n.getFullYear(),n.getMonth()+S.off,1),y=m.getFullYear(),mo=m.getMonth(),r=C.summary(st,S.type,y,mo,st.filter),ex=S.type==='expense';
  sheet('Resumen',`<div class="seg" style="margin-top:8px"><button class="${ex?'on':''}" onclick="S.type='expense';S.sel=null;openSummary()">Gastos</button><button class="${ex?'':'on'}" onclick="S.type='income';S.sel=null;openSummary()">Ingresos</button></div>
- <div class="bar" style="margin-top:8px"><button class="ib" aria-label="Mes anterior" onclick="S.off--;openSummary()">${svg('bk')}</button><b style="text-transform:capitalize">${m.toLocaleDateString('es-EC',{month:'long',year:'numeric'})}</b><button class="ib" aria-label="Mes siguiente" ${S.off>=0?'disabled style="opacity:.3"':''} onclick="S.off++;openSummary()"><span style="transform:scaleX(-1);display:flex">${svg('bk')}</span></button></div>
+ <div class="bar" style="margin-top:8px"><button class="ib" aria-label="Mes anterior" onclick="S.off--;openSummary()">${svg('bk')}</button><b>${(x=>x[0].toUpperCase()+x.slice(1))(m.toLocaleDateString('es-EC',{month:'long'}))} ${y}</b><button class="ib" aria-label="Mes siguiente" ${S.off>=0?'disabled style="opacity:.3"':''} onclick="S.off++;openSummary()"><span style="transform:scaleX(-1);display:flex">${svg('bk')}</span></button></div>
  <div class="m" style="font-size:13px">Total ${ex?'gastado':'recibido'} · ${st.filter==='all'?'todas las cuentas':E(acc(st.filter).name)}</div><div class="big n">${C.fmt(r.total)}</div>
  ${r.rows.length?r.rows.map(x=>`<button class="row" style="display:block" onclick="S.sel=S.sel==='${x.cat}'?null:'${x.cat}';openSummary()"><div class="bar" style="min-height:0"><span>${x.cat?E(catName(S.type,x.cat)):'Sin categoría'}</span><b class="n">${C.fmt(x.v)}</b></div><div class="bar6"><i style="width:${Math.round(x.v/r.rows[0].v*100)}%"></i></div>${S.sel===x.cat&&x.cat?`<div class="s">Neto del mes en esta categoría (ingresos − gastos): <b class="n">${C.fmt(C.net(st,x.cat,y,mo))}</b></div>`:''}</button>`).join(''):`<p class="m" style="text-align:center;padding:30px 0">Sin ${ex?'gastos':'ingresos'} este mes</p>`}`)}
 const vv=window.visualViewport;
 function fit(){if(vv){document.body.style.height=vv.height+'px';document.body.style.top=vv.offsetTop+'px'}scrollTo(0,0)}
-if(vv){vv.addEventListener('resize',fit);vv.addEventListener('scroll',fit)}addEventListener('orientationchange',fit);fit();
+if(vv)vv.addEventListener('resize',fit);addEventListener('orientationchange',fit);fit();
 addEventListener('focusin',e=>{if(/INPUT|SELECT/.test(e.target.tagName))document.body.classList.add('kb')});
 addEventListener('focusout',()=>setTimeout(()=>{if(!/INPUT|SELECT/.test((document.activeElement||{}).tagName))document.body.classList.remove('kb')},60));
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
