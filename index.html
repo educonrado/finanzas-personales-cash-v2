@@ -58,7 +58,7 @@ html,body{overscroll-behavior:none}main,.bd{overscroll-behavior:contain}
 <div id="sheet" class="hide"></div><div id="toast" class="hide" role="status"></div>
 <script src="core.js"></script>
 <script>
-const VERSION='3.5 · 23 nov 2026';
+const VERSION='3.6 · 23 nov 2026';
 const C=Core,KEY='midinero_v3',E=C.esc,$=i=>document.getElementById(i);
 const IC={in:'<path d="M17 7 7 17M7 8v9h9"/>',out:'<path d="M7 17 17 7M8 7h9v9"/>',sw:'<path d="M7 7h12l-3-3M17 17H5l3 3"/>',ch:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',ge:'<path d="M3 6h11M18 6h3M3 12h5M12 12h9M3 18h13M20 18h1"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',bk:'<path d="M15 18l-6-6 6-6"/>',pl:'<path d="M12 5v14M5 12h14"/>',se:'<path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/>'};
 const svg=(k,s=20)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k]}</svg>`;
@@ -169,8 +169,9 @@ function openEdit(id){const t=st.txs.find(x=>x.id===id),tr=t.type==='transfer',d
  ${tr?'':`<label class="m">Tipo</label><select id="eT" class="fld" onchange="eCats()">${opt('Gasto','expense',t.type==='expense')}${opt('Ingreso','income',t.type==='income')}</select>`}
  <label class="m">${tr?'Origen':'Cuenta'}</label><select id="eC" class="fld">${accOpts(t.acc)}</select>
  ${tr?`<label class="m">Destino</label><select id="eTo" class="fld">${accOpts(t.to)}</select>`:`<label class="m">Categoría</label><select id="eK" class="fld"></select>`}
- <label class="m">Fecha y hora</label><input id="eF" class="fld" type="datetime-local" value="${ds}"><div id="eErr" class="err hide"></div>
- <button class="btn" onclick="saveEdit('${id}')">Guardar</button><button class="btn2 dg" onclick="tt(this,()=>delTx('${id}'))">Eliminar</button>`);if(!tr)eCats(t.cat)}
+ <label class="m">Fecha y hora</label><div class="fld" style="position:relative;overflow:hidden;display:flex;align-items:center"><span id="eFt" class="n"></span><input id="eF" type="datetime-local" value="${ds}" onchange="eFd()" oninput="eFd()" aria-label="Fecha y hora" style="position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;font-size:16px"></div><div id="eErr" class="err hide"></div>
+ <button class="btn" onclick="saveEdit('${id}')">Guardar</button><button class="btn2 dg" onclick="tt(this,()=>delTx('${id}'))">Eliminar</button>`);eFd();if(!tr)eCats(t.cat)}
+function eFd(){const v=$('eF').value,d=new Date(v);$('eFt').textContent=v&&!isNaN(d)?d.toLocaleString('es-EC',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'Elegir fecha'}
 function eCats(c){const ty=$('eT').value,k=$('eK');k.innerHTML=opt('Sin categoría','',!c)+st.categories.filter(x=>x.type===ty).map(x=>opt(E(x.name),x.id,x.id===c)).join('')}
 function saveEdit(id){const t=st.txs.find(x=>x.id===id),tr=t.type==='transfer',a=C.toCents($('eA').value),d=$('eD').value.trim(),f=new Date($('eF').value),e=$('eErr');
  const bad=!d?'La descripción no puede estar vacía':!a||a>C.MAX?'Monto no válido':isNaN(f)?'Fecha no válida':tr&&$('eC').value===$('eTo').value?'Origen y destino deben ser distintos':'';
@@ -227,14 +228,14 @@ function openSummary(){const n=new Date(),m=new Date(n.getFullYear(),n.getMonth(
  <div class="bar" style="margin-top:8px"><button class="ib" aria-label="Mes anterior" onclick="S.off--;openSummary()">${svg('bk')}</button><b>${(x=>x[0].toUpperCase()+x.slice(1))(m.toLocaleDateString('es-EC',{month:'long'}))} ${y}</b><button class="ib" aria-label="Mes siguiente" ${S.off>=0?'disabled style="opacity:.3"':''} onclick="S.off++;openSummary()"><span style="transform:scaleX(-1);display:flex">${svg('bk')}</span></button></div>
  <div class="m" style="font-size:13px">Total ${ex?'gastado':'recibido'} · ${st.filter==='all'?'todas las cuentas':E(acc(st.filter).name)}</div><div class="big n">${C.fmt(r.total)}</div>
  ${r.rows.length?r.rows.map(x=>`<button class="row" style="display:block" onclick="S.sel=S.sel==='${x.cat}'?null:'${x.cat}';openSummary()"><div class="bar" style="min-height:0"><span>${x.cat?E(catName(S.type,x.cat)):'Sin categoría'}</span><b class="n">${C.fmt(x.v)}</b></div><div class="bar6"><i style="width:${Math.round(x.v/r.rows[0].v*100)}%"></i></div>${S.sel===x.cat&&x.cat?`<div class="s">Neto del mes en esta categoría (ingresos − gastos): <b class="n">${C.fmt(C.net(st,x.cat,y,mo))}</b></div>`:''}</button>`).join(''):`<p class="m" style="text-align:center;padding:30px 0">Sin ${ex?'gastos':'ingresos'} este mes</p>`}`)}
-const vv=window.visualViewport;let kbOpen=false;
-function fit(){const b=document.body.style;kbOpen=!!vv&&vv.height<innerHeight-100;
- if(kbOpen){b.height=Math.round(vv.height)+'px';b.top=Math.max(0,Math.round(vv.offsetTop))+'px'}
- else{b.height='';b.top='';if(!/INPUT|SELECT/.test((document.activeElement||{}).tagName))scrollTo(0,0)}}
-if(vv){vv.addEventListener('resize',fit);vv.addEventListener('scroll',()=>{if(kbOpen)fit()})}addEventListener('orientationchange',fit);
-const later=()=>[0,120,350,700].forEach(t=>setTimeout(fit,t));
+const vv=window.visualViewport;
+function fit(){if(!vv)return;const b=document.body.style,h=Math.round(vv.height)+'px',t=Math.max(0,Math.round(vv.offsetTop))+'px';if(b.height!==h)b.height=h;if(b.top!==t)b.top=t}
+if(vv){vv.addEventListener('resize',fit);vv.addEventListener('scroll',fit)}addEventListener('resize',fit);addEventListener('orientationchange',fit);
+const later=()=>[0,100,250,500,900].forEach(t=>setTimeout(fit,t));
+const typingEl=()=>/INPUT|SELECT/.test((document.activeElement||{}).tagName);
 addEventListener('focusin',e=>{if(/INPUT|SELECT/.test(e.target.tagName)){document.body.classList.add('kb');later()}});
-addEventListener('focusout',()=>setTimeout(()=>{if(!/INPUT|SELECT/.test((document.activeElement||{}).tagName)){document.body.classList.remove('kb');later()}},60));
+addEventListener('focusout',()=>setTimeout(()=>{if(!typingEl()){document.body.classList.remove('kb');later();setTimeout(()=>{if(!typingEl())scrollTo(0,0)},350)}},60));
+fit();
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 render();typing();
 </script></body></html>
