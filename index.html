@@ -58,7 +58,7 @@ html,body{overscroll-behavior:none}main,.bd{overscroll-behavior:contain}
 <div id="sheet" class="hide"></div><div id="toast" class="hide" role="status"></div>
 <script src="core.js"></script>
 <script>
-const VERSION='3.7 · 24 nov 2026';
+const VERSION='3.7.1 · 24 nov 2026';
 const BLOQUEAR_ARRASTRE=true; // PRUEBA reversible: pon false para desactivar el bloqueo de arrastre (ver bloque al final del script)
 const C=Core,KEY='midinero_v3',E=C.esc,$=i=>document.getElementById(i);
 const IC={in:'<path d="M17 7 7 17M7 8v9h9"/>',out:'<path d="M7 17 17 7M8 7h9v9"/>',sw:'<path d="M7 7h12l-3-3M17 17H5l3 3"/>',ch:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',ge:'<path d="M3 6h11M18 6h3M3 12h5M12 12h9M3 18h13M20 18h1"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',bk:'<path d="M15 18l-6-6 6-6"/>',pl:'<path d="M12 5v14M5 12h14"/>',se:'<path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/>'};
@@ -243,8 +243,11 @@ fit();
 // ===== PRUEBA REVERSIBLE: bloqueo de arrastre en zonas que no se desplazan =====
 // Para desactivarla basta con poner BLOQUEAR_ARRASTRE=false (arriba del script). Si algo no se desplaza bien, apágala.
 if(BLOQUEAR_ARRASTRE){
- const scrollable=el=>{for(;el&&el!==document.documentElement;el=el.parentElement){const o=getComputedStyle(el).overflowY;if((o==='auto'||o==='scroll')&&el.scrollHeight>el.clientHeight+1)return true}return false};
- document.addEventListener('touchmove',e=>{if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;if(!scrollable(e.target))e.preventDefault()},{passive:false});
+ // Se permite el gesto si hay algo desplazable EN LA DIRECCIÓN del gesto (vertical u horizontal).
+ const scrollable=(el,h)=>{for(;el&&el!==document.documentElement;el=el.parentElement){const c=getComputedStyle(el),o=h?c.overflowX:c.overflowY;if((o==='auto'||o==='scroll')&&(h?el.scrollWidth>el.clientWidth+1:el.scrollHeight>el.clientHeight+1))return true}return false};
+ let sx=0,sy=0;
+ document.addEventListener('touchstart',e=>{const t=e.touches&&e.touches[0];if(t){sx=t.clientX;sy=t.clientY}},{passive:true});
+ document.addEventListener('touchmove',e=>{if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;const t=(e.touches&&e.touches[0])||{clientX:sx,clientY:sy},h=Math.abs(t.clientX-sx)>Math.abs(t.clientY-sy);if(!scrollable(e.target,h))e.preventDefault()},{passive:false});
 }
 // ===== fin de la prueba reversible =====
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
