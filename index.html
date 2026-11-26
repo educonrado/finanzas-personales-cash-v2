@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,viewport-fit=cover"><title>Mi Dinero</title>
-<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#ffffff"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mi Dinero">
+<link rel="manifest" href="manifest.json"><meta name="color-scheme" content="light dark"><meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0B1220" media="(prefers-color-scheme: dark)"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mi Dinero">
 <link rel="apple-touch-icon" href="icons/icon-192.png"><link rel="icon" type="image/svg+xml" href="icons/icon.svg">
 <style>
 :root{--bg:#fff;--ink:#0B1F3A;--mu:#5B6B7F;--ln:#E6EBF1;--sf:#F3F5F8;--br:#0A3A7A;--gr:#0B7A4B;--gb:#E6F4EC;--dg:#B42318}
@@ -44,11 +44,13 @@ form{display:flex;gap:8px}.inp,.fld{width:100%;height:48px;border-radius:24px;ba
 html{width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%}.ph,.sh,header,main,footer,.bd{min-width:0}main,.bd{overflow-x:hidden}
 .inp{flex:1;min-width:0;width:auto}.inp,.fld{font-size:16px}.bar>div{display:flex}
 .tok.on{background:var(--br);color:#fff}.tok.on b{color:#fff}
-body.kb footer{padding-bottom:10px}body.kb .stat,body.kb .chips{display:none}
+body.kb footer{padding-bottom:10px}
 html,body{overscroll-behavior:none}main,.bd{overscroll-behavior:contain}
 .trw{display:flex;align-items:flex-end;gap:6px}.trw select{min-width:0;width:100%;padding:0 8px}
 .fld[type=datetime-local]{display:block;width:100%;min-width:0;max-width:100%;text-align:left}
 .fld::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
+html{background:var(--bg)}footer{transition:padding-bottom .15s ease}
+.pop{max-height:min(240px,calc(var(--vvh,700px)*.34))}#tr{max-height:none}
 </style></head><body>
 <div class="ph"><header id="top"></header><main id="list"></main>
 <footer><div id="pop" class="pop hide" role="listbox"></div>
@@ -58,7 +60,7 @@ html,body{overscroll-behavior:none}main,.bd{overscroll-behavior:contain}
 <div id="sheet" class="hide"></div><div id="toast" class="hide" role="status"></div>
 <script src="core.js"></script>
 <script>
-const VERSION='3.7.1 · 24 nov 2026';
+const VERSION='3.7.2 · 24 nov 2026';
 const BLOQUEAR_ARRASTRE=true; // PRUEBA reversible: pon false para desactivar el bloqueo de arrastre (ver bloque al final del script)
 const C=Core,KEY='midinero_v3',E=C.esc,$=i=>document.getElementById(i);
 const IC={in:'<path d="M17 7 7 17M7 8v9h9"/>',out:'<path d="M7 17 17 7M8 7h9v9"/>',sw:'<path d="M7 7h12l-3-3M17 17H5l3 3"/>',ch:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',ge:'<path d="M3 6h11M18 6h3M3 12h5M12 12h9M3 18h13M20 18h1"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',bk:'<path d="M15 18l-6-6 6-6"/>',pl:'<path d="M12 5v14M5 12h14"/>',se:'<path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/>'};
@@ -231,15 +233,18 @@ function openSummary(){const n=new Date(),m=new Date(n.getFullYear(),n.getMonth(
  <div class="m" style="font-size:13px">Total ${ex?'gastado':'recibido'} · ${st.filter==='all'?'todas las cuentas':E(acc(st.filter).name)}</div><div class="big n">${C.fmt(r.total)}</div>
  ${r.rows.length?r.rows.map(x=>`<button class="row" style="display:block" onclick="S.sel=S.sel==='${x.cat}'?null:'${x.cat}';openSummary()"><div class="bar" style="min-height:0"><span>${x.cat?E(catName(S.type,x.cat)):'Sin categoría'}</span><b class="n">${C.fmt(x.v)}</b></div><div class="bar6"><i style="width:${Math.round(x.v/r.rows[0].v*100)}%"></i></div>${S.sel===x.cat&&x.cat?`<div class="s">Neto del mes en esta categoría (ingresos − gastos): <b class="n">${C.fmt(C.net(st,x.cat,y,mo))}</b></div>`:''}</button>`).join(''):`<p class="m" style="text-align:center;padding:30px 0">Sin ${ex?'gastos':'ingresos'} este mes</p>`}`)}
 const vv=window.visualViewport;let baseH=0,lastW=0;
-function fit(){if(!vv)return;if(innerWidth!==lastW){baseH=0;lastW=innerWidth}baseH=Math.max(baseH,vv.height);
- const b=document.body.style,h=Math.round(vv.height)+'px',t=Math.max(0,Math.round(vv.offsetTop))+'px';if(b.height!==h)b.height=h;if(b.top!==t)b.top=t;
- document.body.classList.toggle('kb',vv.height<baseH-120)} // el teclado se detecta por el tamaño real del área visible, no por el foco
+let lastH=-99,lastT=-99,fitQ=0;
+function apply(){if(!vv)return;if(innerWidth!==lastW){baseH=0;lastW=innerWidth}baseH=Math.max(baseH,vv.height);
+ const h=Math.round(vv.height),t=Math.max(0,Math.round(vv.offsetTop));
+ if(Math.abs(h-lastH)>2||Math.abs(t-lastT)>2){lastH=h;lastT=t;const b=document.body.style;b.height=h+'px';b.top=t+'px';document.documentElement.style.setProperty('--vvh',h+'px')}
+ document.body.classList.toggle('kb',vv.height<baseH-120)} // solo afecta al relleno inferior; ya no se esconde nada
+function fit(){if(fitQ)return;fitQ=requestAnimationFrame(()=>{fitQ=0;apply()})} // un solo reajuste por cuadro
 if(vv){vv.addEventListener('resize',fit);vv.addEventListener('scroll',fit)}addEventListener('resize',fit);addEventListener('orientationchange',()=>{baseH=0;fit()});
 const later=()=>[0,100,250,500,900].forEach(t=>setTimeout(fit,t));
 const typingEl=()=>/INPUT|SELECT/.test((document.activeElement||{}).tagName);
 addEventListener('focusin',e=>{if(/INPUT|SELECT/.test(e.target.tagName)){if(!vv)document.body.classList.add('kb');later()}});
 addEventListener('focusout',()=>setTimeout(()=>{if(!typingEl()){if(!vv)document.body.classList.remove('kb');later();setTimeout(()=>{if(!typingEl())scrollTo(0,0)},350)}},60));
-fit();
+apply();
 // ===== PRUEBA REVERSIBLE: bloqueo de arrastre en zonas que no se desplazan =====
 // Para desactivarla basta con poner BLOQUEAR_ARRASTRE=false (arriba del script). Si algo no se desplaza bien, apágala.
 if(BLOQUEAR_ARRASTRE){
